@@ -1,0 +1,36 @@
+---
+title: "Untitled"
+author: "Hugo Gruson"
+date: "December 3, 2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Workflow
+
+```{r}
+DiagrammeR::grViz("
+digraph rmarkdown {
+getspec -> procspec
+'as.rspec' -> procspec
+procspec -> {'plot.rspec' 'aggplot' 'explorespec'}
+procspec -> vismodel
+procspec -> {'summary.rspec' peakshape}
+vismodel -> colspace
+colspace -> {'plot.colspace' tcsplot}
+colspace -> coldist
+vismodel -> coldist
+# Image stuff
+getimg -> procimg
+'as.rimg' -> procimg
+procimg -> 'plot.rimg'
+procimg -> classify
+classify -> adjacent
+coldist -> adjacent
+}
+", height = 200)
+```
+
