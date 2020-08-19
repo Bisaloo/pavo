@@ -1,0 +1,146 @@
+---
+title: "Using ggplot2 with pavo"
+author: "Hugo Gruson"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using ggplot2 with pavo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r}
+library(ggplot2)
+theme_set(theme_minimal())
+library(dplyr)
+library(tidyr)
+library(pavo)
+data(sicalis)
+data(teal)
+```
+
+# Plotting spectra
+
+## `plot.rspec(type = "overlay")`
+
+```{r}
+p <- teal %>%
+  procspec(opt = "smooth") %>%
+  pivot_longer(-wl) %>%
+  ggplot(aes(x = wl, y = value, col = name)) +
+  geom_line()
+p
+```
+
+```{r}
+p <- p + scale_color_manual(values = spec2rgb(teal))
+p
+```
+
+The nice thing about using ggplot2, it's that it opens up many possibilities by
+using either themes:
+
+```{r}
+library(ggthemes)
+p +
+  theme_dark()
+```
+Or by using gganimate to create animations:
+
+```{r}
+library(gganimate)
+p +
+  transition_states(name)
+```
+
+## `aggplot()`
+
+```{r}
+sicalis %>%
+  pivot_longer(-wl) %>%
+  separate(name, into = c("ind", "patch"), sep = "\\.") %>%
+  group_by(wl, patch) %>%
+  summarise(value_mean = mean(value),
+            value_sd = sd(value)) %>%
+  ggplot(aes(x = wl)) +
+    geom_ribbon(aes(ymin = value_mean - value_sd, ymax = value_mean + value_sd, fill = patch), alpha = 0.5) +
+    geom_line(aes(y = value_mean, col = patch))
+```
+
+## `explorespec()`
+
+```{r}
+sicalis %>%
+  pivot_longer(-wl) %>%
+  separate(name, into = c("ind", "patch"), sep = "\\.") %>%
+  ggplot(aes(x = wl, y = value, col = patch)) +
+    geom_line() +
+    facet_wrap(~ ind)
+```
+
+```{r}
+sicalis %>%
+  pivot_longer(-wl) %>%
+  separate(name, into = c("ind", "patch"), sep = "\\.") %>%
+  ggplot(aes(x = wl, y = value, col = ind)) +
+    geom_line() +
+    facet_wrap(~ patch)
+```
+
+## `plotsmooth()`
+
+# Plotting colourspaces (`plot.colspace()`)
+
+```{r}
+data(flowers)
+```
+
+## `diplot()`
+
+```{r}
+vis_flowers <- vismodel(flowers, visual = "canis")
+di_flowers <- colspace(vis_flowers)
+
+ggplot(di_flowers, aes(x = x, y = 1)) +
+  annotate("segment", x = -1/sqrt(2), xend = 1/sqrt(2), y = 1, yend = 1, color = "grey") +
+  annotate("text", x = c(-1.1/sqrt(2), 1.1/sqrt(2)), y = 1, label = c("S", "L")) +
+  geom_point(shape = "|", size = 5) +
+  theme_void()
+```
+
+## `triplot()`
+
+```{r}
+vis_flowers <- vismodel(flowers, visual = "apis")
+tri_flowers <- colspace(vis_flowers)
+
+ggplot(tri_flowers, aes(x = x, y = y)) +
+  annotate("polygon",  
+           x = c(0, -1 / sqrt(2), 1 / sqrt(2)),
+           y = c(sqrt(2) / sqrt(3), -sqrt(2) / (2 * (sqrt(3))), -sqrt(2) / (2 * (sqrt(3)))),
+           fill = NA, color = "black") +
+  geom_point() +
+  theme_void()
+```
+
+## `cieplot()`
+
+## `tetraplot()`
+
+## `projplot()`
+
+## `segplot()`
+
+## `catplot()`
+
+## `hexplot()`
+
+
+
